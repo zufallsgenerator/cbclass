@@ -1,0 +1,21 @@
+{
+  "name": "cbclass",
+  "version": "0.0.1",
+  "description": "Small class library",
+  "main": "class.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zufallsgenerator/cbclass.git"
+  },
+  "keywords": [
+    "class"
+  ],
+  "author": "Christer Bystrom <chrby001@hotmail.com> (https://github.com/zufallsgenerator)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zufallsgenerator/cbclass/issues"
+  }
+}
