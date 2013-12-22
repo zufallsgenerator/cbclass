@@ -2,6 +2,23 @@
 var CB = {};
 (function(scope) {
   'use strict';
+  
+  var USE_TYPING = Object.defineProperty ? true : false;
+  
+  function makePropDef(klass, type, key) {
+    Object.defineProperty(klass.prototype, key, {
+      set: function(val) {
+        if (typeof val !== type || (type === "number" && isNaN(val))) {
+          throw "Property " + key + " should be of type " + type + ", value is: " + val;
+        }
+        this["__" + key] = val;
+      },
+      get: function() {
+        return this["__" + key];
+      }
+    });
+  }
+  
   /**
   * Function for creating a class
   *
@@ -15,7 +32,7 @@ var CB = {};
   *    The instantiated class
   */
   scope.Class = function(name, members) {
-    var klass, key;
+    var klass, key, type;
     scope[name] = function(params) {
       var key, cls;
       cls = scope[name];
@@ -36,9 +53,24 @@ var CB = {};
     klass = scope[name];
 
     // Copy member objects
-    for (key in members) {
-      if (members.hasOwnProperty(key)) {
-        klass.prototype[key] = members[key];
+    if (USE_TYPING) {
+      for (key in members) {
+        if (members.hasOwnProperty(key)) {
+          if (key.indexOf("__type_") === 0) {
+            continue;
+          }
+          type = members["__type_" + key];
+          if (type) {
+            makePropDef(klass, type, key);
+          }
+          klass.prototype[key] = members[key];
+        }
+      }
+    } else {
+      for (key in members) {
+        if (members.hasOwnProperty(key)) {
+          klass.prototype[key] = members[key];
+        }
       }
     }
 
