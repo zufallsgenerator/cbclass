@@ -5,11 +5,11 @@ var CB = {};
   
   var USE_TYPING = Object.defineProperty ? true : false;
   
-  function makePropDef(klass, type, key) {
+  function typedProp(klass, key, type) {
     Object.defineProperty(klass.prototype, key, {
       set: function(val) {
         if (typeof val !== type || (type === "number" && isNaN(val))) {
-          throw "Property " + key + " should be of type " + type + ", value is: " + val;
+          throw "Property '" + key + "' should be of type '" + type + "', value is: '" + val + "' of type '" + typeof val + "'";
         }
         this["__" + key] = val;
       },
@@ -32,7 +32,7 @@ var CB = {};
   *    The instantiated class
   */
   scope.Class = function(name, members) {
-    var klass, key, type;
+    var klass, key, split, propName, type;
     scope[name] = function(params) {
       var key, cls;
       cls = scope[name];
@@ -53,27 +53,22 @@ var CB = {};
     klass = scope[name];
 
     // Copy member objects
-    if (USE_TYPING) {
-      for (key in members) {
-        if (members.hasOwnProperty(key)) {
-          if (key.indexOf("__type_") === 0) {
-            continue;
+    for (key in members) {
+      if (members.hasOwnProperty(key)) {
+        if (key.indexOf(":") > -1) {
+          split = key.split(":");
+          propName = split[0];
+          type = split[1];
+          if (USE_TYPING) {
+            typedProp(klass, propName, type);
           }
-          type = members["__type_" + key];
-          if (type) {
-            makePropDef(klass, type, key);
-          }
-          klass.prototype[key] = members[key];
-        }
-      }
-    } else {
-      for (key in members) {
-        if (members.hasOwnProperty(key)) {
+          klass.prototype[propName] = members[key];
+        } else {
           klass.prototype[key] = members[key];
         }
       }
     }
-
+    
     // Extra functions on prototype
     klass.__instanceCount__ = 0;
     klass.prototype.className = name;
