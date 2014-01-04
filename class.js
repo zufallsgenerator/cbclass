@@ -67,7 +67,7 @@ To add static objects to your class, use
 
     MyPrefix.Class("Math", {}).addStatic({
       square: function(value) {
-        return square * square;
+        return value * value;
       }
     });
     
