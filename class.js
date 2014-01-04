@@ -1,12 +1,90 @@
-/* jshint strict: true */
-var CB = {};
-(function(scope) {
+/*
+
+The MIT License (MIT)
+
+Copyright (c) 2013 Christer Byström
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+---
+
+### A class libary with support for typed properties. Bind it to any prefix you want
+
+In your HTML file, include class.js
+
+...
+<script type="text/javascript" src="class.js"></script>
+<script type="text/javascript>
+  initClassLibraryWithPrefix("MyPrefix");  // Do once
+</script>
+
+<!-- Load the rest of your javascript files -->
+
+To disable type checking, add true as the second parameter after your prefix.
+
+Example usage:
+
+    MyPrefix.Class("TestSprite", {
+      image: null,   // Normal property
+      "x:number": 0, // Type-checked property
+      "y:number": 0,
+    
+      initialize: function() {
+        console.log("Image name is: " + this.image);
+        console.log("Pos is: (" + this.x + ", " + this.y + ")");
+      },
+      // ... more code
+    });
+    
+    // Instantiate your class
+    
+    var sprite = new MyPrefix.TestSprite({
+      x: 200,
+      y: 300,
+      image: "bunny.png"
+    });
+
+All properties in the dict passed to the constructor are copied to the
+prototype of the new object.
+
+To add static objects to your class, use
+
+    MyPrefix.Class("Math", {}).addStatic({
+      square: function(value) {
+        return square * square;
+      }
+    });
+    
+    MyPrefix.Math.square(4); // 16
+
+*/
+
+/*jshint strict: true */
+/*global window */
+function initClassLibraryWithPrefix(prefix, disableTypeChecking) {
   'use strict';
+  var scope = {};
+  window[prefix] = scope;
+  var USE_TYPING = Object.defineProperty && !disableTypeChecking ? true : false;
   
-  var USE_TYPING = Object.defineProperty ? true : false;
-  
-  function typedProp(klass, key, type) {
-    Object.defineProperty(klass.prototype, key, {
+  function typedProp(obj, key, type) {
+    Object.defineProperty(obj, key, {
       set: function(val) {
         if (typeof val !== type || (type === "number" && isNaN(val))) {
           throw "Property '" + key + "' should be of type '" + type + "', value is: '" + val + "' of type '" + typeof val + "'";
@@ -60,7 +138,7 @@ var CB = {};
           propName = split[0];
           type = split[1];
           if (USE_TYPING) {
-            typedProp(klass, propName, type);
+            typedProp(klass.prototype, propName, type);
           }
           klass.prototype[propName] = members[key];
         } else {
@@ -78,16 +156,8 @@ var CB = {};
     };
 
     klass.prototype.toString = function() {
-      return String("<CB." + this._id + " instance>");
+      return String("<" + prefix + "." + this._id + " instance>");
     };
-
-
-    if (Array.constructor) {
-      klass.prototype._assertParams = _assertParams;
-    } else {
-      klass.prototype._assertParams = function() {};
-    }
-
 
     // Method for adding class methods/variables
     klass.addStatic = function(members) {
@@ -96,32 +166,10 @@ var CB = {};
           klass[key] = members[key];
         }
       }
-
       return klass;
     };
-
     return klass;
   };
-
-
-  function _assertParams(params, template) {
-    // This probably requires a pretty new web browser
-    for (var name in template) {
-      if (template.hasOwnProperty(name)) {
-        var expectedType = template[name];
-        var expectedStr = "parameter '" + name + "' of type '" +
-        expectedType.name + "'";
-        if (params[name] === undefined) {
-          throw new Error("Missing: " + expectedStr);
-        }
-
-        if (params[name].constructor !== expectedType) {
-        throw new Error("Wrong type: " + (typeof params[name]) +
-          ". Expected " + expectedStr);
-        }
-      }
-    }
-  }
 
   scope.namespace = function(namespace) {
     var parts = namespace.split("."), part, i, currentNode = scope;
@@ -133,4 +181,4 @@ var CB = {};
       currentNode = currentNode[part];
     }
   };
-})(CB);
+}

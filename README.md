@@ -1,4 +1,4 @@
 cbclass
 =======
 
-Small class creation library
+A class creation library with type checking properties.
