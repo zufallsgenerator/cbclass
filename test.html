@@ -10,18 +10,26 @@
 
 <script type="text/javascript">
 
-try {
-  CB.Class("Test", {
-    "whatever": 4,
-    "name:string": "Bob"
-  });
-  var t = new CB.Test({});
-  
-  t.whatever = "hello";
-  
-  t.name = 42;
+initClassLibraryWithPrefix("MyPrefix");
+
+var errorCaught = true;
+MyPrefix.Class("Test", {
+  "x:number": 4,
+  "name:string": "Bob"
+});
+
+var t = new MyPrefix.Test({});
+
+t.name = "Alice";
+
+try {  
+  t.x = "fourty-two";
 } catch(e) {
-  alert("ERROR: " + e);
+  errorCaught = true;
+}
+
+if (!errorCaught) {
+  alert("Class library should throw error when assigning a string to a number");
 }
 
 </script>
